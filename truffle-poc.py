@@ -35,11 +35,12 @@ class TrufflePoc():
         self.session = Session()
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-            "Authorization": f"Bearer {self.github_token}",
+            "Authorization": f"{self.github_token}",
             "X-GitHub-Api-Version": "2022-11-28"
         }
         self.session.headers.update(headers)
-        
+        self.get_trufflehog_config_files()
+
         # Download TruffleHog binary if not present
         if platform.system().lower() == 'windows':
             trufflehog_path = Path('binaries/trufflehog.exe')
@@ -171,6 +172,23 @@ class TrufflePoc():
             else:
                 continue
         return None
+    
+    def get_trufflehog_config_files(self):
+        if Path('config').exists() and any(f.suffix == '.yml' for f in Path('config').iterdir()):
+            return
+        url = "https://api.github.com/repos/trufflesecurity/trufflehog/contents/examples"
+        self.check_rate_limit()
+        response = self.session.get(url)
+        response.raise_for_status()
+        config_files = response.json()
+        for file_info in config_files:
+            download_url = file_info.get('download_url')
+            if download_url and file_info.get('name').endswith('.yml'):
+                file_response = self.session.get(download_url)
+                file_response.raise_for_status()
+                config_path = os.path.join('config', file_info.get('name'))
+                with open(config_path, 'wb') as f:
+                    f.write(file_response.content)
 
     def run(self):
         # Step 1: Get the contents from the timeline URL (XML content)

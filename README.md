@@ -115,10 +115,10 @@ python truffle-poc.py --local-only --once
 
 ## Project Structure
 
-```
+```sh
 truffle-poc/
 ├── truffle-poc.py          # Main script
-├── requirements.txt         # Python dependencies
+├── requirements.txt        # Python dependencies
 ├── findings.txt            # Security findings (generated)
 ├── .env                    # GitHub token (create manually)
 ├── binaries/               # TruffleHog binaries (downloaded automatically)
